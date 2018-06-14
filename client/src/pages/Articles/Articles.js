@@ -3,6 +3,7 @@ import Jumbotron from "../../components/Jumbotron";
 import API from "../../utils/API";
 import { Link } from "react-router-dom";
 import DeleteBtn from "../../components/DeleteBtn";
+import SaveBtn from "../../components/SaveBtn";
 import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
 import { Input, TextArea, FormBtn, Header } from "../../components/Form";
@@ -11,17 +12,16 @@ class Articles extends Component {
     state = {
         articles: [],
         title: "",
-        author: "",
-        synopsis: ""
+        author: ""
         };
 
     componentDidMount() {
         this.loadArticles();
     }
-
+    
     loadArticles = () => {
         API.getArticles()
-            .then(res => this.setState({ articles: res.data, title: "", author: "", synopsis: "" })
+            .then(res => this.setState({ articles: res.data, title: this.state.title, author: this.state.author, synopsis: "" })
             )
             .catch(err => console.log(err));
     };
@@ -30,12 +30,22 @@ class Articles extends Component {
             .then(res => this.loadArticles())
             .catch(err => console.log(err));
     };
-
+    updateArticle = (id, item) => {
+        API.updateArticle(id, item)
+            .then(res => this.loadArticles())
+            .catch(err => console.log(err));
+    };
     handleInputChange = event => {
         const { name, value } = event.target;
         this.setState({
             [name]: value
         });
+    };
+    handleFormSearch = event => {
+        event.preventDefault();
+        if (this.state.title || this.state.author) {
+            this.loadArticles()
+        }
     };
 
     handleFormSubmit = event => {
@@ -50,6 +60,7 @@ class Articles extends Component {
                 .catch(err => console.log(err));
         }
     };
+   
 
 
     render() {
@@ -76,10 +87,10 @@ class Articles extends Component {
                             />
                             
                             <FormBtn
-                                disabled={!(this.state.author && this.state.title)}
-                                onClick={this.handleFormSubmit}
+                                disabled={!(this.state.title)}
+                                onClick={this.handleFormSearch}
                             >
-                                Submit Article
+                                Search Article
                                 </FormBtn>
 
                         </form>
@@ -90,18 +101,23 @@ class Articles extends Component {
                         <Header><h1>Results</h1></Header>
                         {this.state.articles.length ? (
                             <List>
-                                {this.state.articles.map(article => (
+                                {this.state.articles.map(article => {
+                                    if((this.state.title ||this.state.author) && (article.title.includes(this.state.title) && article.author.includes(this.state.author))){
+                                        return(
                                     <ListItem key={article._id}>
                                         <Link to={"/articles/" + article._id}>
                                             <strong>
                                                 {article.title}
-                                                <br />>
+                                                <br />
                                                 {article.author}
                                             </strong>
                                         </Link>
                                         <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
+                                        <br/>
+                                        <SaveBtn onClick={()=> this.updateArticle(article._id, {saved: true})} />
                                     </ListItem>
-                                ))}
+                                        )}}
+                                )}
                             </List>
                         ) : (
                                 <h3>No Results to Display</h3>
@@ -111,6 +127,29 @@ class Articles extends Component {
                 <Row>
                     <Col size="md-12 sm-12" >
                     <Header><h1>Saved Articles</h1></Header>
+                        {this.state.articles.length ? (
+                            <List>
+                                {this.state.articles.map(article => {
+                                    if (article.saved) {
+                                        return (
+                                            <ListItem key={article._id}>
+                                                <Link to={"/articles/" + article._id}>
+                                                    <strong>
+                                                        {article.title}
+                                                        <br />
+                                                        {article.author}
+                                                    </strong>
+                                                </Link>
+                                                <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
+                                            </ListItem>
+                                        )
+                                    }
+                                }
+                                )}
+                            </List>
+                        ) : (
+                                <h3>No Results to Display</h3>
+                            )}
                     </Col>
                 </Row>
             </Container>
