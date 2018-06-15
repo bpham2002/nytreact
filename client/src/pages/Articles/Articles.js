@@ -12,7 +12,8 @@ class Articles extends Component {
     state = {
         articles: [],
         title: "",
-        author: ""
+        author: "",
+        isSearch: false
         };
 
     componentDidMount() {
@@ -21,7 +22,7 @@ class Articles extends Component {
     
     loadArticles = () => {
         API.getArticles()
-            .then(res => this.setState({ articles: res.data, title: this.state.title, author: this.state.author, synopsis: "" })
+            .then(res => this.setState({ articles: res.data, title: this.state.title, author: this.state.author})
             )
             .catch(err => console.log(err));
     };
@@ -44,6 +45,9 @@ class Articles extends Component {
     handleFormSearch = event => {
         event.preventDefault();
         if (this.state.title || this.state.author) {
+            this.setState({
+                isSearch: true
+            })
             this.loadArticles()
         }
     };
@@ -53,8 +57,7 @@ class Articles extends Component {
         if (this.state.title && this.state.author) {
             API.saveArticle({
                 title: this.state.title,
-                author: this.state.author,
-                synopsis: this.state.synopsis
+                author: this.state.author
             })
                 .then(res => this.loadArticles())
                 .catch(err => console.log(err));
@@ -91,7 +94,7 @@ class Articles extends Component {
                                 onClick={this.handleFormSearch}
                             >
                                 Search Article
-                                </FormBtn>
+                            </FormBtn>
 
                         </form>
                     </Col>
@@ -99,29 +102,31 @@ class Articles extends Component {
                 <Row>
                     <Col size="md-12 sm-12">
                         <Header><h1>Results</h1></Header>
-                        {this.state.articles.length ? (
+                        {this.state.isSearch ? (
                             <List>
                                 {this.state.articles.map(article => {
-                                    if((this.state.title ||this.state.author) && (article.title.includes(this.state.title) && article.author.includes(this.state.author))){
+                                    if(article.title.includes(this.state.title))    {
                                         return(
-                                    <ListItem key={article._id}>
-                                        <Link to={"/articles/" + article._id}>
-                                            <strong>
-                                                {article.title}
-                                                <br />
-                                                {article.author}
-                                            </strong>
-                                        </Link>
-                                        <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
-                                        <br/>
-                                        <SaveBtn onClick={()=> this.updateArticle(article._id, {saved: true})} />
-                                    </ListItem>
-                                        )}}
-                                )}
+                                            <ListItem key={article._id}>
+                                                <Link to={"/articles/" + article._id}>
+                                                    <strong>
+                                                        {article.title}
+                                                        <br />
+                                                        {article.author}
+                                                    </strong>
+                                                </Link>
+                                                <DeleteBtn onClick={() => this.deleteArticle(article._id)} />
+                                                <br/>
+                                                <SaveBtn onClick={()=> this.updateArticle(article._id, {saved: true})} />
+                                            </ListItem>
+                                        )
+                                    }
+                                    
+                                })}
                             </List>
                         ) : (
                                 <h3>No Results to Display</h3>
-                            )}
+                        )}
                     </Col>
                 </Row>
                 <Row>
