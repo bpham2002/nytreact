@@ -86,7 +86,7 @@ class Articles extends Component {
                                 value={this.state.author}
                                 onChange={this.handleInputChange}
                                 name="author"
-                                placeholder="Author (required)"
+                                placeholder="Author"
                             />
                             
                             <FormBtn
@@ -105,7 +105,7 @@ class Articles extends Component {
                         {this.state.isSearch ? (
                             <List>
                                 {this.state.articles.map(article => {
-                                    if(article.title.includes(this.state.title))    {
+                                    if (article.title.includes(this.state.title) && article.author.includes(this.state.author)){
                                         return(
                                             <ListItem key={article._id}>
                                                 <Link to={"/articles/" + article._id}>
